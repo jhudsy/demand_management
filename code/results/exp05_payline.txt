@@ -1,0 +1,30 @@
+S4_big_and_good — decomposition by payline (grants per reference proposal)
+
+--- payline 5%  (no cap: Qfund 2.630, success 2.3%) ---
+    mechanism              Qfund  deletion loss  triage value      NET   succ%
+    individual K=1         2.396         -0.501        +0.268   -0.234   8.6%
+    institutional M=30     2.577         -0.580        +0.527   -0.053  10.4%
+    cooling off            2.606         -0.244        +0.220   -0.023   4.4%
+    resub limit 1          2.543         -0.145        +0.058   -0.087   3.3%
+
+--- payline 10%  (no cap: Qfund 2.268, success 4.8%) ---
+    mechanism              Qfund  deletion loss  triage value      NET   succ%
+    individual K=1         2.005         -0.534        +0.270   -0.263  17.3%
+    institutional M=30     2.181         -0.628        +0.541   -0.087  20.9%
+    cooling off            2.232         -0.253        +0.217   -0.036   9.1%
+    resub limit 1          2.195         -0.140        +0.067   -0.073   6.7%
+
+--- payline 15%  (no cap: Qfund 2.029, success 7.4%) ---
+    mechanism              Qfund  deletion loss  triage value      NET   succ%
+    individual K=1         1.739         -0.554        +0.264   -0.290  26.4%
+    institutional M=30     1.914         -0.660        +0.545   -0.115  31.3%
+    cooling off            1.987         -0.260        +0.218   -0.042  14.0%
+    resub limit 1          1.973         -0.133        +0.077   -0.056  10.3%
+
+--- payline 25%  (no cap: Qfund 1.703, success 13.1%) ---
+    mechanism              Qfund  deletion loss  triage value      NET   succ%
+    individual K=1         1.345         -0.623        +0.265   -0.359  45.0%
+    institutional M=30     1.481         -0.736        +0.514   -0.222  52.3%
+    cooling off            1.655         -0.272        +0.223   -0.048  24.3%
+    resub limit 1          1.658         -0.124        +0.079   -0.045  17.7%
+

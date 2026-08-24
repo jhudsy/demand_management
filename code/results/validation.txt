@@ -1,0 +1,57 @@
+case                   metric        paper    model     diff
+------------------------------------------------------------
+a_perfect              G1 succ       21.3%    24.5%    +3.2
+a_perfect              G2 succ       34.6%    32.6%    -2.0
+a_perfect              Qbar G1       111.6    111.8     +0.2
+a_perfect              Qbar G2       112.1    112.3     +0.2
+a_perfect              G2 share      76.9%    76.7%    -0.2
+a_perfect              reviews              5606658
+------------------------------------------------------------
+b_baseline             G1 succ       25.2%    13.0%   -12.2
+b_baseline             G2 succ        9.9%    15.9%    +6.0
+b_baseline             Qbar G1       115.0    113.1     -1.9
+b_baseline             Qbar G2       112.8    113.7     +0.9
+b_baseline             G2 share      44.8%    73.4%   +28.6
+b_baseline             reviews              5769612
+------------------------------------------------------------
+c_selective            G1 succ       34.8%    11.4%   -23.4
+c_selective            G2 succ        4.5%    16.6%   +12.1
+c_selective            Qbar G1       111.6    112.5     +0.9
+c_selective            Qbar G2       116.4    112.9     -3.5
+c_selective            G2 share      19.8%    76.5%   +56.7
+c_selective            reviews              5795729    +0.5%
+------------------------------------------------------------
+d_positive_feedback    G1 succ       17.8%     9.4%    -8.4
+d_positive_feedback    G2 succ       13.5%    17.6%    +4.1
+d_positive_feedback    Qbar G1       117.6    113.8     -3.8
+d_positive_feedback    Qbar G2       113.8    115.4     +1.6
+d_positive_feedback    G2 share      60.6%    80.3%   +19.7
+d_positive_feedback    reviews              5827843    +1.0%
+------------------------------------------------------------
+e_negative_feedback    G1 succ       33.9%    18.3%   -15.6
+e_negative_feedback    G2 succ        5.6%    13.6%    +8.0
+e_negative_feedback    Qbar G1       109.7    111.7     +2.0
+e_negative_feedback    Qbar G2       112.0    110.8     -1.2
+e_negative_feedback    G2 share      25.1%    63.7%   +38.6
+e_negative_feedback    reviews              5690550    -1.4%
+------------------------------------------------------------
+f_g2_one_grant         G1 succ       29.4%    18.2%   -11.2
+f_g2_one_grant         G2 succ        4.8%    12.8%    +8.0
+f_g2_one_grant         Qbar G1       109.1    111.7     +2.6
+f_g2_one_grant         Qbar G2       112.5    110.9     -1.6
+f_g2_one_grant         G2 share      19.1%    50.4%   +31.3
+f_g2_one_grant         reviews              4133638   -28.4%
+------------------------------------------------------------
+g_cooling_off          G1 succ       12.5%    11.8%    -0.7
+g_cooling_off          G2 succ       17.4%    16.7%    -0.7
+g_cooling_off          Qbar G1       115.7    113.0     -2.7
+g_cooling_off          Qbar G2       113.0    113.6     +0.6
+g_cooling_off          G2 share      57.7%    71.9%   +14.2
+g_cooling_off          reviews              5024428   -12.9%
+------------------------------------------------------------
+
+Qualitative signatures that must hold (see notes/validation.md):
+  [PASS] (f) cap lowers UNTARGETED group's funded quality     113.1 -> 111.7
+  [PASS] (f) cap cuts targeted group's funding share          73.4% -> 50.4%
+  [FAIL] (g) cooling-off RAISES high-volume group's share     73.4% -> 71.9%
+  [FAIL] (g) cooling-off roughly halves G1 success            13.0% -> 11.8%

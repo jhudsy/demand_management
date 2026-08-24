@@ -1,0 +1,32 @@
+========================================================================
+1. IS THE TWO-STAGE GAIN A SECOND INDEPENDENT READING?
+========================================================================
+Outline free to write and free to screen, entry at full price,
+elasticity zero. Nothing left but the extra reading.
+
+arm                                  load   Qfund
+no cap                               6098   2.029
+ballot at the same load              1895   1.526
+pre-screen, sigma=0.195              1899   2.014
+pre-screen, sigma=0.4                1898   2.010
+pre-screen, sigma=0.9                1900   1.979
+pre-screen, sigma=1.5                1898   1.908
+pre-screen, sigma=3                  1899   1.793
+
+  A second reading beats a ballot at the same load, which is ordinary
+  triage value. If it never exceeds the uncapped reference, the
+  advantage in the headline table must come from pool inflation.
+
+========================================================================
+2. WHAT THE TWO-STAGE LOAD FLOOR RESTS ON
+========================================================================
+Uncapped load 6098; target 3049.
+
+ screening cost  floor share  tuned v    load   Qfund
+           0.05        0.089    0.292    3054   2.463
+           0.10        0.152    0.250    3050   2.441
+           0.20        0.279    0.169    3045   2.389
+           0.30        0.406    0.087    3054   2.238
+           0.40        0.533    0.020    3253   2.349
+
+  The floor scales with the screening cost and never reaches zero.

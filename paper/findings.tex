@@ -1,0 +1,1232 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue!60!black}
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{1.4em}{0.6em}
+\usepackage{parskip}
+\usepackage{natbib}
+\usepackage{url}
+\newcommand{\wa}[2]{\url{#1} (Internet Archive capture, #2)}
+
+\title{Demand Management in Research Funding:\\Interim Findings from an Agent-Based Model}
+\author{}
+\date{4 August 2026 \\[0.4em] \textit{Preliminary --- not for circulation}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Demand management restricts what may be submitted to a funding scheme, so that (among other things)
+the number of proposals arriving fits the capacity available to assess them. Instruments to do this, namely institutional quotas; per-investigator caps;
+cooling-off rules; resubmission limits and two-stage screening all work by
+removing proposals. Because
+the number of grants is fixed, a funder choosing from a smaller pool potentially reaches
+further down its own ranking, so an instrument's direct effect on the funded
+portfolio is often negative: the choice between instruments is a choice about which
+loss to accept. In this paper we use an agent based simulation to investigate the tradeoffs between the different instruments, tuning them to deliver the same review load, meaning the same
+volume of material for the funder to read, and compare it against a
+counterfactual that removes the same load at random. Every instrument beats that
+counterfactual, in the main comparison at equal review load. We also undertake a parameter sweep with the instruments beating the counterfactual across 92\% of cases.  
+Beyond this, the behaviour of the different instruments diverges, and quality
+trades off against distribution: in our simulation the instrument funding the best
+quality portfolio also funds the fewest researchers and concentrates grants on the
+fewest institutions. That instrument is two-stage screening, and it is also the only
+one that funds a better portfolio than reviewing everything would rather than a
+worse one. Its cheaper cost of entry enlarges the (initial) pool instead of
+shrinking it, so it buys its quality in a different manner from the others
+rather than being better on every count. One
+further result depends on the structure of the instruments rather than on our
+parameter choices. Resubmission limits and two-stage screening cannot cut the
+review load below a floor set by what they act on: banning resubmission outright
+still leaves a median of 49\% of the load, and a two-stage scheme must read every
+outline it attracts. The latter is potentially  worse than a fixed overhead as the
+cheap entry that makes the instrument select well also enlarges the pool of outlines
+it has to screen. In 11\% of the settings swept, and a quarter of those where
+applicants respond strongly to entry cost, a two-stage scheme at its most severe
+setting creates \emph{more} review work than reading every proposal would. Results are replicated over independently
+generated populations of researchers and institutions --- 16 in the main
+comparison, 12 in the parameter sweep --- and instruments are compared within
+population.
+\end{abstract}
+
+\section{Introduction}
+
+A funder can review some number of proposals per round. Demand management is the
+set of rules restricting what may be submitted, so that the number arriving fits
+the capacity available to assess it. Different approaches to demand management, which we refer to as \emph{instruments} differ in who does the restricting, and how.
+
+In this work we consider several instruments which are currently used by funders in demand management.
+A \emph{per-investigator cap} limits how many proposals one researcher may have
+in play, so the researcher must choose between their own ideas. The NIH has
+accepted at most six applications per principal investigator per calendar year
+since September 2025,\footnote{NIH Notice NOT-OD-25-132, \emph{Supporting Fairness
+and Originality in NIH Research Applications}, 17 July 2025: ``NIH will only
+accept six new, renewal, resubmission, or revision applications from an individual
+Principal Investigator/Program Director or Multiple Principal Investigator for all
+council rounds in a calendar year.''
+\wa{https://web.archive.org/web/20260728200334/https://grants.nih.gov/grants/guide/notice-files/NOT-OD-25-132.html}{28 July 2026}}
+and Wellcome permits one application under consideration as lead applicant at a
+time across its three main career schemes.\footnote{Wellcome Discovery Awards:
+``You may only have one application under consideration as a lead applicant at any
+one time for the following funding schemes: Early Career Award[,] Career
+Development Award[,] Discovery Award.''
+\wa{https://web.archive.org/web/20260730062823/https://wellcome.org/research-funding/schemes/wellcome-discovery-awards}{30 July 2026}}
+An \emph{institutional quota} limits how many applications an organisation may submit, resolved
+through internal mechanisms such as triage among drafts. No institution may put
+forward more than three nominations in any Philip Leverhulme Prize subject, and
+nominations come from a head of department rather than from the
+nominee;\footnote{\wa{https://web.archive.org/web/20231216132545/https://www.leverhulme.ac.uk/philip-leverhulme-prizes}{16 December 2023}}
+many NSF solicitations allow an organisation a single
+proposal.\footnote{For example NSF 26-508, \emph{TechAccess: AI-Ready America}:
+``Coordination Hubs are limited to one proposal per institution.''
+\wa{https://web.archive.org/web/20260805072929/https://www.nsf.gov/funding/opportunities/techaccess-ai-ready-america/nsf26-508/solicitation}{5 August 2026}}
+A \emph{cooling-off rule} makes a repeatedly unsuccessful applicant ineligible for
+a period. EPSRC's policy on repeatedly unsuccessful applicants restricted anyone
+with three or more proposals ranked in the bottom half of a funding prioritisation
+list over the previous 24 months, together with a personal success rate below
+25\%, to one application for the following 12 months; it has been paused since May
+2023.\footnote{\wa{https://web.archive.org/web/20250328034049/https://www.ukri.org/councils/epsrc/guidance-for-applicants/unsuccessful-applicants-and-resubmissions/repeatedly-unsuccessful-applicants-policy/}{28 March 2025}}
+A \emph{resubmission limit} caps how often the same project may return: the NIH
+accepts ``only a single resubmission (A1) of an original application
+(A0)'',\footnote{NIH Notice NOT-OD-18-197, 23 July 2018.
+\wa{https://web.archive.org/web/20260723132643/https://grants.nih.gov/grants/guide/notice-files/NOT-OD-18-197.html}{23 July 2026}}
+and Wellcome allows a project to be submitted at most twice across all its
+schemes. \emph{Two-stage screening} has the funder read a short outline from
+everyone and invite a fraction to submit in full. Leverhulme Research Project
+Grants work this way, an approved Outline Application being the route to an
+invited Detailed Application,\footnote{\wa{https://web.archive.org/web/20240228063306/https://www.leverhulme.ac.uk/research-project-grants}{28 February 2024}}
+and two NSF biology divisions ran preliminary proposals from 2012 before
+discontinuing them in 2018.
+
+Demand is a moving target, and the reason the NIH gave for its 2025 cap places
+this study in a particular moment: evidence that AI tools had enabled some
+investigators to submit more than 40 distinct applications in a single round. If
+the cost of writing a proposal is falling faster than the cost of reviewing one,
+funders will be choosing among these instruments more often rather than less.
+
+Their effects on volume are neither immediate nor steady. A cooling-off rule in
+particular does not cap a round at all: it changes who is eligible over time, so
+submission volume can remain high until enough applicants have accumulated the
+record that triggers a bar.
+
+What these rules have in common is that they only subtract. None of them makes a
+proposal better written or a project better conceived, so an instrument reaches
+the funder's decision entirely through which proposals are available to be chosen
+from. With the number of grants fixed, a smaller pool means the funder chooses
+from less, and what a restriction removes is not reliably the work that would have
+lost. Near the funding line the outcome is close to a coin-flip:
+\citet{graves2011} found that resampling the reviewers on an NHMRC panel moved
+29\% of proposals across the line, and \citet{fang2016} found NIH percentile
+scores in the range that matters barely better than chance at predicting later
+productivity. A proposal withheld before submission therefore takes a real chance
+of funding with it, and whether the right ones are withheld depends on how
+accurately whoever does the withholding can rank their own work --- something the
+model treats as a parameter rather than assuming (Section~\ref{sec:round}).
+
+A weaker portfolio is therefore the default expectation for every instrument
+here, and the question worth asking is not whether an instrument costs something
+but rather what these costs are, and how the portfolio changes due to different instruments. We note that there is one exception
+to this argumen. Two-stage screening, while changing the cost, can actually enlarge rather than shrink the application pool.
+
+In this work we compare five instruments: per-investigator caps, institutional quotas,
+cooling-off rules, resubmission limits and two-stage screening, each as described
+above. A partial ballot, which removes proposals at random, is the counterfactual
+against which the other five are measured.
+
+We evaluate the following five hypotheses based on our intuitions around the performance of the different instruments., noting that H5 is taken from
+\citet{roebber2011}.
+
+
+%Five hypotheses were stated before the model was built. Four are our own priors,
+%each restating what an instrument's advocates claim for it or what its critics
+%claim against it: that pooling submissions across an institution discards better
+%work than making one person choose among their own ideas (H1), that a quota levels
+%funding across institutions in a way a personal cap cannot (H2), that a personal
+%cap is fairer because sheer volume stops paying (H3), and that any cap buys the
+%funder's time with the applicant's (H4). The fifth is 
+\begin{description}\setlength\itemsep{0.1em}
+\item[H1] Institutional quotas lose more good work than per-investigator caps.
+\item[H2] Flat institutional quotas spread funding across institutions more than
+      per-investigator caps do.
+\item[H3] Per-investigator caps are fairer, in that submitting many proposals no
+      longer raises a researcher's chance of being funded independently of how
+      good the work is.
+\item[H4] Caps save funder review effort at the price of wasted applicant effort.
+\item[H5] Cooling-off rules invert their own distributional intent. Barring the
+      repeatedly unsuccessful is meant to check applicants who crowd a scheme by
+      submitting constantly, but the bar is triggered by a record of failure,
+      which is what someone who submits rarely and unsuccessfully also has. In
+      \citeauthor{roebber2011}'s case~(g) the group submitting twice as often
+      ends up with a \emph{larger} share of the funding once the rule is
+      introduced.
+\end{description}
+
+We could not reproduce case~(g) from its published description, and the reversal
+does not arise here either, though in the main comparison our cooling-off rule does record the highest
+volume advantage of any instrument tested (across the sweep it does not: the
+proportional quota takes that place more often), %which is a weaker form of the same
+%worry. 
+All five hypotheses are assessed in Section~\ref{sec:scan}.
+
+\paragraph{Terminology.} An \emph{instrument} is one rule for restricting
+submissions: the five above are the instruments compared throughout, and
+\emph{triage} is the act of choosing which proposals a given instrument removes.
+A \emph{proposal} is one full application. A \emph{project} is the underlying
+idea, which may generate several proposals over time; a \emph{resubmission} is a
+proposal carrying a project rejected earlier. An \emph{outline} is the short
+first-stage document in a two-stage scheme. \emph{Intended} proposals are those a
+researcher would write absent any restriction; \emph{submitted} proposals are
+those reaching the funder. \emph{Review load} is what the funder must read,
+measured in full-proposal-equivalents so that documents of different lengths can
+be added together. A \emph{population} is one draw of institutions and
+researchers together with everything that follows from it: the proposals they
+write, the noise in every review, and which rejected projects come back. In our experiments results
+are averaged over many populations.%, since a single one is an arbitrary sample of
+%the world a funder might face. 
+One random seed fixes an entire population, so two
+instruments run on the same seed face the same institutions and the same
+researchers.
+
+\section{The Model}
+
+\subsection{Researchers and Institutions}
+
+Researchers are distributed over institutions. Each researcher $i$ has a
+\emph{latent quality} $Q_i$, standardised so that $Q \sim \mathcal{N}(0,1)$
+across the population. Every quality figure in this report is therefore in
+population standard deviations: a funded portfolio scoring $2.0$ consists of
+proposals two standard deviations above the average researcher.
+
+Latent quality decomposes into an institution effect and an individual deviation, modelled via normal distirbutions with a mean of 0, as follows:
+\[
+Q_i \;=\; \mu_{k(i)} \;+\; \varepsilon_i,
+\qquad
+\mathrm{sd}(\mu_k) = \rho, \qquad \mathrm{sd}(\varepsilon_i) = \sqrt{1-\rho^2},
+\]
+where $i$ indexes researchers, $k$ indexes institutions, and $k(i)$ is the
+institution researcher $i$ belongs to, so $\mu_{k(i)}$ is the effect of that
+researcher's own institution. Both terms are drawn once, when the population is
+built: $\mu_k$ is a fixed property of institution $k$ and $\varepsilon_i$ a fixed
+property of researcher $i$. %Neither is redrawn per proposal --- proposal-level
+%variation is separate and appears in Section~\ref{sec:round}.
+The two variances $\rho^2$ and $1-\rho^2$ sum to 1 whatever the split, so $\rho$
+is the correlation between a researcher's quality and their institution's effect,
+and $\rho^2$ is the share of quality variance lying between institutions rather
+than within them. Note that $\rho$ is a property of the population, not of any one
+institution: it fixes how far apart institutions are, while the spread of
+researchers \emph{inside} an institution is $\sqrt{1-\rho^2}$ and is the same in a
+strong institution as in a weak one. At our default $\rho = 0.5$, which is also
+the largest value we run, institutional effects have a spread of $0.5$ but
+researchers within an institution have a spread of $0.87$, so at least
+three-quarters of the variation in quality is between colleagues rather than
+between employers. An institution a full standard deviation above the mean still
+holds $28\%$ of researchers below the population average. Institutions
+differ in exactly two ways: how many researchers they hold, and how good those
+researchers are on average ($\mu_k$). We do not model \emph{why} an institution
+is strong. Whether a good university has better people or a better research
+office, triage sees a ranking and cannot tell the difference, so separating the
+two adds parameters without changing any decision.
+
+\subsection{A Round}
+\label{sec:round}
+
+\begin{enumerate}\setlength\itemsep{0.15em}
+\item \textbf{Proposals are generated.} Researcher $i$ draws a Poisson number of
+      intended proposals. Proposal $j$ has quality $q_j = Q_i + \eta_j$ with
+      $\eta_j \sim \mathcal{N}(0, \sigma_{\text{idea}}^2)$ drawn afresh for each
+      proposal, so $\sigma_{\text{idea}}$ governs how much the quality of one
+      researcher's proposals varies among themselves. It is a single global
+      value: every researcher is equally variable.
+\item \textbf{The instrument filters them.} This is the only step that differs
+      between the variants being compared.
+\item \textbf{The funder scores what it receives}, observing
+      $s_j = q_j + \nu_j$ with $\nu_j \sim \mathcal{N}(0,\sigma_{\text{eval}}^2)$,
+      and funds the top $G$ by score. $\sigma_{\text{eval}}$ is the imprecision
+      of review, one global value applying to every proposal the funder reads,
+      and is why the best proposal does not always win.
+\item \textbf{Proposals the funder rejected may return} as resubmissions next
+      round, improving slightly on return. A \emph{near-miss}, meaning a proposal
+      in the better-scoring half of those rejected, returns more often than the
+      rest. This is what makes a resubmission limit act at the funding margin,
+      where the original decision was least reliable. Only proposals that reached
+      the funder can return: work the instrument removed at step 2 is dropped
+      rather than carried forward, so an idea a researcher passed over under a
+      cap, or an outline turned down at the first stage of a two-stage scheme,
+      does not re-enter later.
+\end{enumerate}
+
+%Five spread parameters appear and are easily confused. All are global constants:
+%none varies between researchers, institutions or proposals. 
+We highlight the role of the five parameters: $\rho$ governs how
+much of a researcher's quality is explained by where they work.
+$\sigma_{\text{idea}}$ governs how much one researcher's proposals differ from
+each other. $\sigma_{\text{eval}}$ governs how accurately the funder rates a full
+proposal, and $\sigma_{\text{eoi}}$ how accurately it rates a short outline under
+two-stage screening; an outline carries less of the proposal, so
+$\sigma_{\text{eoi}}$ is set well above $\sigma_{\text{eval}}$, conveying much more noise.
+
+$\sigma_{\text{triage}}$ is the accuracy of whoever performs the triage when it is
+not the funder, and it applies to two instruments only. Under an institutional
+quota an internal panel ranks the drafts it receives; under a per-investigator cap
+the researcher ranks their own ideas. Cooling-off rules, resubmission limits and
+two-stage screening involve no such judgement, so it does not enter there. In the base
+case, meaning the default parameter values of Table~\ref{tab:params} rather than
+the swept ones, we set $\sigma_{\text{triage}} = \sigma_{\text{eval}}$. For an
+institutional quota this is close to definitional: an internal panel is a panel of
+academics reading proposals, which is what a funder's panel is. For a
+per-investigator cap it holds for a different reason: the researcher ranks their
+own proposals only against each other, never against the field, so any tendency to
+overrate their own work is common to all of them and cancels. What is left is
+telling one's own ideas apart, which near the funding line is much the judgement
+the academics on a panel are making. The disadvantage a researcher does have, a
+choice among a handful of ideas rather than a field, belongs to the instrument and
+is imposed separately by restricting the choice to the ideas that researcher
+holds, so the equality does not credit applicants with a panel's view of the
+competition. Little rests on it in any case: Section~\ref{sec:scan} reports that
+making triage four times noisier than review moves funded quality by $0.031$.
+
+\paragraph{Budget and payline.} The funder awards a \emph{fixed} number of grants
+$G$, the same under every instrument, rather than funding everything above a
+quality bar. We justify this by noting that real schemes are constrained
+by money rather than by merit: a funder has a budget for the round and works down
+its ranking until the budget is gone. Fixing $G$ also keeps the comparison
+honest, because if the number of awards moved with the instrument then a
+difference in portfolio quality would confound \emph{which} proposals were funded with
+\emph{how many} were funded, and the instruments would no longer be comparable on the measure
+that matters most. The impact of this  is that an instrument cannot register
+its effect by changing how much gets funded, only by changing what does; a scheme
+that funded to a fixed quality bar instead would behave differently, and we do not
+model this. $G$ is set from the volume the scheme
+would receive with no restriction at all: 2000 researchers submitting 1.5
+proposals each on average is a reference volume of 3000, and a payline of $0.15$
+makes $G = 450$. The payline is therefore the success rate the scheme \emph{would}
+have at reference volume, not a rate the funder maintains. An instrument that
+inflates volume lowers everyone's realised success rate while the number of grants
+stays put.
+
+\subsection{Parameters}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Model parameters. The last column gives the range explored in
+Section~\ref{sec:scan}; a dash means the value was held fixed.}
+\label{tab:params}
+\begin{tabular}{llll}
+\toprule
+ & Symbol & Base case & Explored over \\
+\midrule
+researchers                       &                        & 2000 & --- \\
+institutions                      &                        & 50 & --- \\
+intended proposals per round      &                        & Poisson$(1.5)$, max 12 & --- \\
+rounds (early ones discarded)     &                        & 20 (5) & --- \\
+independent populations           &                        & 16 (12 in the sweep) & --- \\
+payline (sets $G=450$)            &                        & 0.15 & 0.05--0.30 \\
+review imprecision                & $\sigma_{\text{eval}}$ & 0.195 (calibrated) & --- \\
+outline screening imprecision     & $\sigma_{\text{eoi}}$ & 0.9 & --- \\
+triage imprecision                & $\sigma_{\text{triage}}$ & $=\sigma_{\text{eval}}$ & $1\times$--$4\times$ \\
+within-researcher idea spread     & $\sigma_{\text{idea}}$ & 0.5 & 0.2--1.0 \\
+institution effect on quality     & $\rho$                 & 0.5 & 0--0.5 \\
+volume elasticity                 & $\epsilon$             & 0.5 & 0.0--1.5 \\
+effort re-spent after a cap       & $\psi$                 & 0.0 & 0.0--1.0 \\
+resubmission probability          &                        & 0.35 (0.75 near-miss) & $0.3$--$1.7\times$ \\
+quality gained on resubmission    &                        & 0.10 & --- \\
+outline cost to write             & $c_{\text{eoi}}$       & 0.15 of a proposal & --- \\
+outline cost to screen            & $\gamma$               & 0.20 of a review & 0.05--0.40 \\
+review load retained              &                        & 0.50 & 0.25--0.85 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The first five rounds are discarded, because the population starts with no
+history of rejection and the instruments conditioning on that history do not bind
+until one has accumulated.
+
+One entry needs more than its one-line description. The \emph{effort re-spent
+after a cap}, $\psi$, is an accounting parameter and has nothing to do with
+resubmission. It decides what becomes of the work an applicant does not do because
+an instrument stopped them from writing it. At $\psi=0$ that effort is simply
+saved and the applicant is better off by exactly the proposals they did not write.
+At $\psi=1$ every hour of it goes into the proposals they do write instead, so the
+instrument saves them nothing at all. Since the effort is redirected rather than
+converted into extra proposals, $\psi$ changes what an instrument costs applicants
+without changing anything the funder sees: it moves quality of the funded portfolio for each unit of effort an applicant puts in ($Q/E$ in Table~\ref{tab:metrics}) and no other measure.
+The true value of $\psi$ lies somewhere between the two ends. We have found no guidance in the literature as to how to calibrate this value, hence we sweep over it rather than setting it to a constant.
+
+\subsection{Calibration}
+
+$\sigma_{\text{eval}}$ is fitted so the model reproduces the instability
+\citet{graves2011} measured by bootstrap-resampling NHMRC panel scores. They
+classify proposals as always, sometimes, or never funded across resamples at a
+22.9\% payline. Fitting this one parameter to one of the three bins gives
+$\sigma_{\text{eval}} = 0.195$ and reproduces the other two: 10.9\% always funded
+against their 9\%, 28.9\% sometimes funded against the 29\% fitted, and 60.1\%
+never funded against their 61\%.
+
+\subsection{Demand-Management Instruments}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Demand-management instruments. ``Decides'' specifies who performs the triage.}
+\label{tab:instr}
+\begin{tabular}{ll p{10.05cm}}
+\toprule
+Instrument & Decides & Rule \\
+\midrule
+Individual cap & Researcher
+  & At most $K$ proposals per researcher per $W$ rounds. The researcher chooses
+    between their own ideas, ranking them on a signal of accuracy
+    $\sigma_{\text{triage}}$. The cap is announced
+    ahead of time, so the ideas that are not selected are never written up.
+    Researchers start at uniformly random points in their cycle, so the cohort
+    does not become ineligible in unison. \\
+Institutional quota & Institution
+  & At most $M$ proposals per institution, or $r$ per researcher but never fewer
+    than one, resolved by an
+    internal panel ranking the drafts on a signal of accuracy
+    $\sigma_{\text{triage}}$. The competition runs on drafted proposals, so the
+    effort behind unselected drafts is already spent. \\
+Cooling off & Mechanical
+  & Ineligible for $B$ rounds after $S$ or more proposals are ranked in the bottom
+    half of the funder's list, not merely unfunded, within a two-round look-back
+    window, together with a personal success rate below 25\% over the same
+    window. Someone ineligible writes
+    nothing. \\
+Resubmission limit & Mechanical
+  & A project may be resubmitted at most $R$ times. \\
+Two-stage screening & Funder
+  & Everyone submits an outline costing $c_{\text{eoi}}$ of a full proposal. The
+    funder screens every outline on a noisier signal $\sigma_{\text{eoi}}$, at a
+    cost $\gamma$ of a full review each, and invites the top fraction $v$ to submit
+    in full. Values for $c_{\text{eoi}}$, $\gamma$ and $\sigma_{\text{eoi}}$ are in
+    Table~\ref{tab:params}. \\
+\midrule
+Random thinning & ---
+  & Keeps a random fraction $p$. The counterfactual throughout, and also a real
+    instrument: a partial ballot. It shrinks the pool without selecting, so the
+    gap to it at the \emph{same load} is an instrument's triage value. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Each instrument is run on its own; no two are ever applied together; combining instruments is one avenue of future work.
+Resubmission itself is not restricted in this way: projects the funder
+rejected come back under every instrument, and are subject to whatever that
+instrument does on their return. Under a per-investigator cap a returning project competes for the
+same $K$ slots as a fresh idea, and under an institutional quota it goes into the
+same internal competition. What is never combined is the resubmission
+\emph{limit} with a cap or a quota.
+
+Two of the rules in Table~\ref{tab:instr} are deliberately stricter than the
+schemes they are drawn from, so that the instrument tests cleanly. Cooling off bars an ineligible
+applicant entirely, whereas EPSRC's constrained applicants could still submit one
+proposal during the twelve months. And the resubmission limit binds on the
+project, whereas the NIH's binds on the labelled resubmission chain: since 2014 an
+unsuccessful A1 may be resubmitted as a new A0, so the same idea may return
+indefinitely. Both differences make the modelled instrument reject grants more strictily than its
+original at the same nominal setting, which the capacity matching absorbs, since
+each instrument is tuned to a review load rather than to a setting.
+
+Entry cost matters for two-stage screening. Submitting to it costs only the
+outline, so volume responds: the intended submission rate is multiplied by
+$(1/c)^{\epsilon}$, where $c$ is the entry cost in full proposals and $\epsilon$ is
+the \emph{volume elasticity}. Every other instrument leaves $c=1$, so the factor
+is 1 and nothing changes; two-stage screening sets $c = c_{\text{eoi}}$, the cost
+of an outline, $0.15$ of a full proposal throughout. At $\epsilon=0$ nobody reacts to cheaper entry; at
+$\epsilon=1$ halving the cost of entering doubles the entries. Nothing anchors
+$\epsilon$ empirically, so rather than pick a value we run the comparison across
+its whole plausible range in Section~\ref{sec:scan}.
+
+\subsection{Measures}
+
+Table \ref{tab:metrics} lists what measures we record for each run. As discussed later, no instrument best satisfies all these measures, in particular, 
+%We now set out what is recorded from each run in order to compare the
+%instruments. No single number decides between them, which is the point of
+%reporting nine: 
+portfolio quality, the spread of funding over people and over
+institutions, and what applicants spend to produce it all move in different
+directions under different instruments.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Measures. $G=450$ is the fixed grant count; $E$ is total applicant
+effort in full-proposal-equivalents.}
+\label{tab:metrics}
+\begin{tabular}{ll p{9.4cm}}
+\toprule
+name & symbol & definition \\
+\midrule
+portfolio quality & Qfund
+  & Mean latent quality of funded proposals, in population SDs. Sensitive to
+    pool size, so comparable only at matched load. \\
+triage value & ---
+  & Qfund minus a random-thinning counterfactual at the \emph{same} load: the
+    part attributable to selecting rather than to shrinking. \\
+applicant premium & appPrem
+  & Mean $Q$ of researchers winning at least one grant, minus mean $Q$ of those
+    submitting at least one proposal. Both groups are defined by the instrument
+    and vary in size, so it is read alongside $n_{\text{act}}$ and
+    $n_{\text{win}}$. \\
+grants per winner & g/win
+  & $G$ divided by the number of distinct winners: repeat winning at the person
+    level. \\
+volume advantage & volAdv
+  & Funding rate of the top submission-count tercile against the bottom, within
+    quality quintiles so quality is held fixed. Above 1 means submitting more
+    buys funding independently of merit. Undefined when no quality stratum
+    contains any variation in submission count. \\
+volume dispersion & vGini
+  & Gini coefficient of submission counts among active researchers. $0$ means
+    everyone submits equally often. \\
+concentration & HHI
+  & The Herfindahl--Hirschman index $\sum_k s_k^2$, where $s_k$ is institution
+    $k$'s share of the grants awarded. It is $1/50$ when all 50 institutions win
+    equally and $1$ when one takes everything, so higher means funding sits in
+    fewer institutions. Section~\ref{sec:hhi} gives the benchmarks it must be read
+    against. \\
+quality per effort & $Q/E$
+  & $\mathrm{Qfund}\times G/E$: portfolio quality bought per unit of applicant
+    effort. \\
+realised success rate & ---
+  & $G$ divided by proposals submitted. Since $G$ is fixed, it rises when an
+    instrument cuts volume and falls when one inflates it. \\
+review load & ---
+  & What the funder must read, in full-proposal-equivalents. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Review load is the quantity held equal across instruments. It is reported so that
+each instrument can be seen to have hit the target, and because it is not simply
+the number of proposals submitted: under two-stage screening the funder reads
+every outline as well as every invited proposal. From $n$ outlines its load is
+$v\,n + \gamma\,n$, where $v$ is the fraction of outlines invited to submit in
+full --- the knob the scheme is tuned on --- and $\gamma$ is the cost of screening
+one outline, $0.20$ of a full review in the base case and swept from $0.05$ to
+$0.40$ in Section~\ref{sec:scan}. The scheme therefore reduces the load only
+because the outlines it turns down are cheap to read, not because it reads fewer
+documents; if $\gamma$ were 1 it would read strictly more than an uncapped funder.
+
+\paragraph{Effort accounting.}\label{sec:effort} $E$ accumulates the effort applicants spend on
+every proposal written, including drafts that an institutional competition then
+discards. It does not include the effort institutions spend \emph{running} that
+competition, whereas the funder's outline screening under a two-stage scheme is
+counted in full. That asymmetry favours institutional quotas, whose internal panel
+work is free here, so their standing on $Q/E$ is conservative. Nothing prices
+funder administration, panel setup, coordination, delay, applicant disutility, the
+value of unfunded ideas, or the societal value of the research, and $Q/E$ should
+not be read as welfare in a broader sense.
+
+\subsection{Institutional Scenarios}
+
+Institutions are varied along the two channels the model contains. In
+Table~\ref{tab:scen} the size distribution is either equal, lognormal with shape
+parameter $\sigma$, or Pareto with shape parameter $\alpha$, where a smaller
+$\alpha$ gives a heavier tail so that a few institutions become very large. The
+last column is the correlation between an institution's size and its quality
+effect, so a positive value means larger institutions also hold better
+researchers. S0 is the null case in which affiliation carries no information about
+quality, so the unit of the cap should not matter; a model showing an effect there
+would be wrong.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Institutional scenarios. $\rho$ is the correlation between a
+researcher's quality and their institution's effect.}
+\label{tab:scen}
+\begin{tabular}{llrr}
+\toprule
+ & size distribution & $\rho$ & corr(size, quality) \\
+\midrule
+S0 null              & equal, 40 researchers each & 0.0 & --- \\
+S1 size only         & lognormal, $\sigma=0.8$    & 0.0 & --- \\
+S2 quality only      & equal, 40 each             & 0.5 & 0.0 \\
+S3 size and quality  & lognormal, $\sigma=0.8$    & 0.5 & 0.0 \\
+S4 big and good      & lognormal, $\sigma=0.8$    & 0.5 & 0.6 \\
+S5 heavy tail        & Pareto, $\alpha=1.2$       & 0.5 & 0.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Experimental Design}
+
+Because the pool must be reduced by some means, an instrument's contribution is
+what it recovers relative to reducing it at random:
+\begin{equation}
+\underbrace{\text{net effect of a cap}}_{\text{measured against no cap}}
+\;=\;
+\underbrace{\text{triage value}}_{\text{against a counterfactual at the same load}}
+\;-\;
+\underbrace{\text{deletion loss}}_{\text{counterfactual against no cap}}
+\end{equation}
+
+Both terms on the right are positive magnitudes. The \emph{deletion loss} is what
+disappears when proposals are removed at all: with a fixed number of grants and a
+smaller pool, the funder reaches further down the ranking and the funded portfolio
+is weaker. By construction every instrument incurs it equally at a given load,
+since the counterfactual is defined at that load, so it belongs to the capacity
+constraint rather than to any instrument. The \emph{triage value} is what
+selective removal recovers on top of that, and it is what distinguishes the
+instruments. An instrument improves on no cap at all only where its triage value
+exceeds the deletion loss --- which, as Section~\ref{sec:payline} shows, is rare for
+instruments acting on full proposals.
+
+Three conventions follow.
+
+\begin{enumerate}\setlength\itemsep{0.15em}
+\item \textbf{``No cap'' is not a comparator to be outperformed.} It is an
+      infeasible reference quantifying what the capacity constraint costs, and is
+      reported for that purpose only.
+\item \textbf{Instruments are compared at equal review load}, not at equal
+      parameter values. A rule admitting 85\% of proposals is not competing with
+      one admitting 45\%; it is failing to solve the problem.
+\item \textbf{Comparisons are made within population.} One seed fixes the institutions,
+      the researchers and every random draw, and each instrument is run
+      against the same sequence of 16 populations. Differencing within a
+      population removes variation that would otherwise dominate the contrast.
+\end{enumerate}
+
+The primary comparison uses scenario S4, in which institutions differ in size,
+differ in quality, and the larger ones are also the better ones. That is the case
+most often asserted of real systems, and the one in which a flat quota is most
+contentious. Section~\ref{sec:scan} reports what changes under the other five.
+
+\section{Evaluation}
+
+\subsection{Comparison at Equal Review Capacity}
+
+Every instrument is tuned to admit half the uncapped review load. Several are set
+in whole proposals and cannot land exactly on that target: achieved loads run from
+2{,}945 to 3{,}159 against a target of 3{,}049. Portfolio quality moves by about
+$0.05$ across a $\pm4\%$ band in load, enough to disturb the ranking, so each
+instrument is compared against a random-thinning counterfactual tuned to
+\emph{its own} achieved load. The triage column is that comparison, and it is
+unaffected by the mismatch.
+
+\begin{table}[!htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.6pt}
+\caption{Capacity-matched comparison, scenario S4, 16 populations. Every variant
+awards the same 450 grants. \emph{triage} is Qfund minus a random-thinning
+counterfactual at the same load, differenced within population, with a 95\%
+interval on that paired difference. Qfund levels carry much wider intervals
+($\pm0.05$ to $\pm0.10$), because the set of institutions varies more between
+populations than the instruments do within one; the paired contrast rather than
+the level is therefore the appropriate comparison. $n_{\text{act}}$ is
+researchers submitting at least once, $n_{\text{win}}$ those winning at least
+once. Bold marks the extreme value in a column, at both ends where the desirable
+direction is contested.}
+\label{tab:cap}
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+instrument (setting) & load & Qfund & triage & $Q/E$ & appPrem & $n_{\text{act}}$ & $n_{\text{win}}$ & g/win & volAdv & vGini \\
+\midrule
+\multicolumn{11}{l}{\textit{infeasible reference --- what the capacity constraint takes away}}\\
+no cap                         & 6097 & 2.058 & ---  & 0.152 & 1.217 & 1880 & 317 & 1.42 & 1.535 & 0.299 \\
+\midrule
+two-stage ($v{=}0.168$)        & 3043 & \textbf{2.426} & $+.652_{\pm.026}$ & \textbf{0.415} & \textbf{0.679} &  726 & 245 & \textbf{1.84} & 1.573 & 0.316 \\
+inst.\ quota ($r{=}1.53$)      & 3049 & 2.054 & $+.280_{\pm.010}$ & 0.209 & 0.898 & 1310 & 313 & 1.44 & 1.604 & 0.316 \\
+cooling off ($S{=}4,B{=}3$)    & 2945 & 2.016 & $+.258_{\pm.011}$ & 0.308 & 1.079 & 1129 & 293 & 1.54 & 1.620 & 0.304 \\
+inst.\ quota ($M{=}74$)        & 3032 & 2.005 & $+.233_{\pm.038}$ & \textbf{0.204} & 1.014 & 1230 & 315 & 1.43 & 1.382 & 0.322 \\
+resub.\ limit ($R{=}0$)        & 3004 & 1.989 & $+.219_{\pm.012}$ & 0.298 & \textbf{1.293} & 1554 & 307 & 1.47 & 1.543 & 0.279 \\
+individual cap ($K{=}2,W{=}1$) & 3159 & 1.970 & $+.173_{\pm.009}$ & 0.281 & 1.166 & 1812 & 352 & \textbf{1.28} & \textbf{1.129} & \textbf{0.109} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The two quality columns rank the instruments identically despite measuring
+different things: Qfund is a level compared across mismatched loads, triage value
+a paired difference at matched load. A ranking surviving both does not rest on the
+load mismatch.
+
+\subsubsection{Per-Instrument Results}
+
+\paragraph{Two-stage screening} funds the best portfolio ($2.426$), above even the
+uncapped reference, recovers by far the largest triage value ($+0.652$), and
+delivers the most quality per unit of applicant effort ($0.415$), because what it
+discards is a cheap outline rather than a written proposal. Its costs fall on
+individual researchers, and are taken up below. Section~\ref{sec:why} establishes where
+the quality advantage comes from.
+
+\paragraph{Institutional quotas} recover most of the portfolio quality
+($2.005$--$2.054$), and the flat form spreads funding across institutions further
+than any other instrument. They deliver the least quality per unit of applicant
+effort ($0.204$), because the internal competition discards proposals that
+have already been written, and that figure does not yet charge them for running
+the competition.
+
+\paragraph{Cooling-off rules} are intermediate on quality and second on quality
+per unit of effort ($0.308$), because an ineligible applicant writes nothing. They
+cut the applicant population sharply, from $1880$ researchers to $1129$.
+
+\paragraph{Resubmission limits} produce the highest applicant premium ($1.293$),
+above even the uncapped case, by stopping the same project returning
+indefinitely. A premium computed over a group the instrument itself defines invites the
+objection that it tracks the size of that group rather than the instrument, but
+the two orderings do not match. Cooling off admits fewer applicants than either
+quota ($1129$ against $1230$ and $1310$) and records a higher premium than both;
+individual caps admit almost everyone ($1812$) and sit mid-table. Group size alone
+predicts none of this. Resubmission limits do give up more portfolio quality than
+the institutional instruments, a cost we have not found discussed in the
+literature.
+
+\paragraph{Individual caps} are the only instrument that compresses submission
+volume, taking the Gini of submission counts from $0.299$ to $0.109$. They recover
+the smallest triage value of anything tested ($+0.173$), because the choice is
+made within the handful of ideas one researcher holds rather than across a field,
+which offers far less to discriminate between.
+
+\paragraph{No dominant instrument.} The trade-off is not incidental to which
+measures we happened to choose. Two-stage screening funds the best portfolio and
+buys the most quality per unit of effort, and it does so by concentrating: on the
+fewest applicants, the fewest winners, the most repeat winning and the most
+concentrated institutional allocation. Individual caps invert every one of those
+and select worst. Nothing tested sits at a favourable point on both.
+
+\subsection{Institutional Concentration}
+\label{sec:hhi}
+
+An HHI cannot be read on its own, because institutions differ in size and a flat
+quota flattens the distribution whether or not that tracks merit. Three reference
+allocations give the scale. Splitting the grants equally between all 50
+institutions would give an HHI of $0.0200$; distributing them in proportion to
+institution size would give $0.0350$; awarding them to the 450 best researchers
+outright, ignoring everything else, would give $0.0927$. A merit-based allocation is itself
+concentrated, because strong researchers are not evenly distributed.
+
+Against that scale, an uncapped competition reaches $0.0950$, almost exactly what
+a perfect merit allocation produces. Two-stage screening reaches $0.1353$, more
+concentrated than merit alone would justify, and the reason is visible in the
+grants-per-winner column. The merit benchmark hands one grant each to 450
+different researchers; two-stage hands 450 grants to 245, at $1.84$ apiece.
+Repeat winning at the person level propagates to the institution level, because
+the people winning repeatedly are not evenly spread. A flat
+institutional quota reaches $0.0575$, well below merit and part of the way towards
+proportionality with size. The column should therefore be read as how far each
+instrument moves the allocation away from what merit alone would produce, rather
+than as whether it corrects a distortion the competition introduced; on that
+reading a flat quota moves it furthest, and whether that is desirable is a
+question this model cannot answer. The remaining values are $0.0953$ for the
+proportional quota, $0.1041$ for cooling off, $0.0998$ for resubmission limits and
+$0.0872$ for individual caps.
+
+\subsection{Sensitivity Analysis}
+\label{sec:scan}
+
+Several parameters have no empirical anchor: volume elasticity $\epsilon$, the
+effort re-spent after a cap $\psi$, how noisy institutional triage is relative to
+funder review, and how persistently rejected projects return. Rather than commit to a
+single value, we ran the whole capacity-matched comparison across the plausible range of
+all of them: 424 parameter settings, combining a one-at-a-time sweep with a
+400-point Latin hypercube sample of the joint space, re-tuning every instrument in
+every setting. A Latin hypercube spreads its points so that each parameter is
+sampled evenly over its own range, which covers a joint space of this size with
+far fewer runs than a grid.
+
+\subsubsection{Dependence on Structure, Calibration and Assumption}
+
+Three kinds of result carry different weight. Findings driven by \textbf{model
+structure} hold for any parameter values: that a resubmission limit cannot remove
+more than the resubmission stream, and that a two-stage scheme must read every
+outline it attracts.
+Findings driven by \textbf{calibration} rest on the fitted
+$\sigma_{\text{eval}}=0.195$, chiefly the size of the triage value any instrument
+can recover, since that depends on how much signal is available to a panel.
+Findings driven by \textbf{assumption} rest on numbers with no empirical anchor,
+and the sweep is what constrains them; two-stage screening's standing is the
+clearest case, moving by $0.634$ in funded quality across the elasticity range.
+
+\subsubsection{Stability of Conclusions}
+
+We call a claim stable if it holds in at least 90\% of the settings able to
+evaluate it. Settings where the named instruments cannot reach the capacity
+target, or where the measure is undefined, are excluded rather than counted as
+support, which is why the row counts differ.
+
+H1--H4 are stated qualitatively and need estimands before they can be counted.
+H1's ``lose good work'' has two readings, tested separately: at the proposal
+level, whether institutional quotas fund a higher-quality portfolio than
+individual caps; at the applicant level, whether individual caps produce the
+higher applicant premium. H2 is tested in the stronger form that institutional
+quotas give the lowest HHI of any instrument, not merely a lower one than
+individual caps. H3 is read as individual caps minimising the volume advantage,
+and H4 as institutional quotas being last on quality per unit of applicant
+effort. The last three rows of Table~\ref{tab:claims} are therefore sharper than
+the hypotheses they come from, and failure there does not refute the looser
+original.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Share of parameter settings in which each claim holds. Claims falling
+below the 90\% line are shown in bold.}
+\label{tab:claims}
+\begin{tabular}{lrr}
+\toprule
+claim & holds & settings \\
+\midrule
+resubmission limits maximise the applicant premium              & 100\% & 185 \\
+H1, applicant level: individual caps match people to quality better & 99\% & 249 \\
+H1, proposal level: institutional quotas fund the better portfolio & 98\% & 249 \\
+two-stage minimises the applicant premium                       & 96\% & 279 \\
+two-stage maximises portfolio quality                           & 95\% & 279 \\
+two-stage exceeds the uncapped reference on quality             & 93\% & 279 \\
+every instrument beats the counterfactual at equal load         & 92\% & 424 \\
+\midrule
+\textbf{single-stage instruments all cost portfolio quality}     & \textbf{79\%} & 424 \\
+\textbf{H3: individual caps minimise the volume advantage}        & \textbf{71\%} & 318 \\
+\textbf{H2 strengthened: institutional quotas deconcentrate most} & \textbf{63\%} & 397 \\
+\textbf{H4 sharpened: institutional quotas last on $Q/E$}         & \textbf{56\%} & 397 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+H1 is contradicted at the proposal level and supported at the applicant level,
+both stably. An institution can move quota between its members, whereas a
+per-investigator cap cannot move it between one person's own ideas, so pooling
+loses less good work; but the people funded track quality better under an
+individual cap. The hypothesis admits no answer until the estimand is
+specified, which is itself the more useful finding.
+
+The one unstable claim not tied to a hypothesis is that every single-stage
+instrument costs portfolio quality against the uncapped reference, which holds in
+79\% of settings. The 131 instrument-settings that exceed it are near-ties rather than
+counterexamples:
+the largest exceeds the uncapped reference by $0.012$ and the median by $0.003$,
+and not one exceeds twice its own standard error. They cluster at shallow cuts,
+median capacity target 70\% of the load retained, where an instrument removes
+little enough that it and the uncapped case are hard to tell apart. The claim
+holds, with the caveat that at shallow cuts the difference is below what this
+design resolves.
+
+H2 and H3 hold only where the instrument binds tightly. H4 is supported in that
+caps do waste applicant effort, but which instrument wastes most is not stable.
+Institutional quotas are last in 56\% of settings, and in 68\% of the remainder
+two-stage screening is, driven by $\psi$: in the bottom third of the $\psi$ range a two-stage scheme
+wastes only outlines and leads that column, while in the top third the effort
+freed by not writing full proposals is re-spent anyway and its median falls from
+$0.264$ to $0.119$. Institutional quotas change little with $\psi$, because their
+waste is already fully realised.
+
+\paragraph{H3 in detail.} Individual caps compress submission volume rather than
+neutralising its effect, and tightening the cap changes what the instrument does:
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+load target retained & volAdv & vGini & Qfund & success rate \\
+\midrule
+$\le 35\%$      & 1.065 & 0.154 & 1.529 & 26.9\% \\
+$35$--$50\%$    & 1.132 & 0.177 & 1.705 & 18.2\% \\
+$50$--$65\%$    & 1.330 & 0.193 & 1.803 & 16.3\% \\
+$>65\%$         & 1.448 & 0.218 & 1.878 & 11.1\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A deep cut drives the volume advantage down to $1.065$, but the vGini column shows
+how. The instrument is not stopping high-volume researchers from turning volume
+into funding. It is removing the difference between them and everyone else: at a
+cap tight enough to retain 35\% of the load, the Gini of submission counts is
+$0.154$ against an uncapped $0.292$, so the top tercile is barely more prolific
+than the bottom. The ratio is still computed, but between groups that hardly
+differ, and a value near 1 records that rather than any change in how volume
+converts into funding. Portfolio quality falls with it, to $1.529$ against
+an uncapped $1.924$. At the looser settings a mildly overloaded funder would
+choose, the volume advantage returns to $1.448$ against an uncapped $1.584$ and
+the effect is largely gone. Every uncapped figure in this paragraph is the median
+over the same settings as the row it is set against, not the single value in
+Table~\ref{tab:cap}.
+
+The success rate indicates what a deep cut amounts to. Retaining only 35\% of the
+load, the funder awards grants to 27\% of everything submitted, against 11\% at a
+shallow cut: better than one proposal in four is funded. Selection has moved from
+the panel to the cap, which determines who may compete while the panel funds a
+quarter of those remaining. We do not claim the model is realistic at that
+extreme, but the direction is clear: applied severely enough, a per-investigator
+cap ceases to be a selection mechanism.
+
+\subsubsection{Achievable Capacity Reductions}
+
+Whether an instrument can reduce the load as far as the funder needs is logically
+prior to any trade-off between its effects, and we have not found it discussed in the
+policy literature, so it is reported here even though it follows from the
+structure of the instruments. Table~\ref{tab:reach} reports how far each
+instrument can squeeze, and how reliably it can be tuned to a given target.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{The lowest review load each instrument can produce, as a share of the
+uncapped load (median over 424 settings), and the share of settings in which it
+could hit the funder's target at all, and to within 8\%.}
+\label{tab:reach}
+\begin{tabular}{lrrr}
+\toprule
+instrument & floor & reaches target & lands on it \\
+\midrule
+institutional quota (flat)  & 0.008 & 100\% & 77\%  \\
+institutional quota (prop.) & 0.009 & 100\% & 92\%  \\
+individual cap              & 0.055 & 100\% & 76\%  \\
+cooling off                 & 0.142 & 100\% & 82\%  \\
+two-stage screening        & 0.423 & 66\%  & 66\%  \\
+resubmission limit          & 0.492 & 63\%  & 44\%  \\
+random thinning (ballot)    & 0.010 & 100\% & 100\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two instruments have a floor, for reasons intrinsic to what they act on. That
+either has one at all is close to definitional; what matters is how high it sits.
+A resubmission limit can only remove resubmissions, so forbidding them entirely
+still admits every fresh proposal. That leaves a median floor of $0.49$, above
+$0.30$ in 88\% of settings. A funder needing to halve its load can just
+about manage by banning resubmission outright, and then has nothing left to
+give.
+
+The two-stage floor is worse than its arithmetic suggests. The scheme must read
+every outline it attracts, so its load cannot fall below the cost of that reading
+however few it invites. That floor scales with what an outline costs to screen:
+at the default elasticity it is $0.09$ of the uncapped load at a screening cost
+of $0.05$ of a review, $0.28$ at $0.20$ and $0.53$ at $0.40$. Those shares are
+not a fixed overhead, because the pool is not fixed. Cheap entry is what draws
+the extra entries that make the scheme select well, and every extra entry is one
+more outline to screen, so the overhead is levied on a pool the instrument itself
+enlarges --- which is why the figures above already exceed the bare screening
+cost, and why they rise further with the elasticity. In 11\% of settings, and 25\%
+of those with $\epsilon \ge 0.8$, the floor exceeds $1.0$: at its most severe
+setting the scheme generates more review work than reading every proposal would,
+up to $1.53$ times as much in the worst case. That is not a cost to be traded
+against a benefit. It is the instrument inverting the thing it was adopted to do,
+and doing so hardest under the conditions that make the case for adopting it.
+Where a funder must retain no more than 35\% of the load, resubmission limits
+reach the target in 15\% of settings and two-stage in 42\%, while the others
+always do.
+
+The other floors in Table~\ref{tab:reach} are of a different kind and should not
+be read as limits a funder would meet. A flat institutional quota bottoms out at
+$0.008$ only because every institution keeps at least one slot however tight the
+quota is set, so fifty institutions guarantee fifty proposals. A per-investigator
+cap bottoms out at $0.055$ because we searched windows of up to six rounds: one
+proposal per researcher per eight rounds reaches $0.041$, and nothing but the
+length of the window stops it going lower. Neither figure is a property of the
+instrument in the way the two above are.
+
+Reaching a target and landing on it are different questions, and the second
+matters much less. Missing a capacity target by 8\% is not a policy problem: a
+funder needs roughly the right load, not an arbitrary one. The distinction earns
+its place for one instrument only. A resubmission limit has six settings in total
+and lands within 8\% in 44\% of cases, against 76--92\% for everything else,
+which compounds the floor above --- an instrument with little range to begin with
+also cannot move smoothly through what range it has. The differences among the
+rest mix coarse settings with the sampling noise involved in tuning to a
+stochastic quantity, and we do not read the ordering among them. Two-stage
+screening's 66\% is not granularity at all: those are the settings in which it
+cannot reach the target.
+
+\subsubsection{Volume Elasticity}
+
+Comparing medians in a low-elasticity band ($\epsilon \le 0.4$) against a high one
+($\epsilon \ge 0.8$), every instrument acting on full proposals barely moves:
+funded quality shifts by at most $0.053$, for cooling off, and quality per unit of
+effort by at most $0.032$, for resubmission limits. Both are well inside the gaps
+between instruments in Table~\ref{tab:cap}, so their ranking does not rest on a
+number we cannot measure.
+
+Two-stage screening moves by $0.634$ in funded quality, from $2.079$ to $2.713$.
+The more consequential effect is on whether it works at all: its load floor rises
+from $0.15$ to $0.69$ of the uncapped load, and the share of settings in which it
+can reach the funder's target falls from 99\% to 32\%. The same response drives
+both. Cheap entry enlarges the pool, which is what makes the scheme select well,
+and enlarging the pool is what stops it cutting the load.
+
+There is a standard behavioural argument for demand management: applicants do not
+weigh the cost of applying against their chance of winning, because the payoff to
+a grant is a career rather than a project, so a cheap route in draws entries far
+out of proportion to what it saves them. That is a claim that $\epsilon$ is high.
+It is also, commonly, the argument for screening applications before they are
+written in full. Within this model the two cannot both stand: accepting the
+premise commits one to the conclusion that two-stage screening is the instrument
+least able to deliver the reduction it is adopted for.
+
+\subsubsection{Remaining Parameters}
+
+Round-to-round variation in funded-portfolio quality is $1.4$--$2.4\%$ of the mean
+for every instrument, too small a spread to rank them by; we report it as a null
+result. Variation between independent populations is larger, and flat
+institutional quotas have the least of it ($0.048$ against $0.071$--$0.088$), so
+their outcome depends least on which set of institutions a funder faces.
+
+Varying one parameter at a time, the range of median funded quality is: payline
+$1.087$, within-researcher idea spread $0.583$, scenario $0.292$, resubmission
+probability $0.284$, load retained $0.108$, triage imprecision $0.031$, volume
+elasticity $0.016$, and $\psi$ exactly zero. Elasticity looks inert here because
+this is a median across instruments and it moves only one of them; the effect on
+two-stage screening reported above is not visible in a pooled figure. The ordering for quality per unit of
+effort is similar, led by payline ($0.287$) and resubmission probability
+($0.224$), with $\psi$ at $0.077$. Triage imprecision resolves one concern:
+making an institutional panel four times noisier than the funder's moves funded
+quality by $0.031$, so the assumption that the two are equally accurate, which we
+could not justify from data, does not drive the results.
+
+The payline and the spread of proposal quality within a researcher dominate
+everything else. Both are measurable in principle, and neither is a free parameter
+of the demand-management question: they describe the funding environment in
+which an instrument operates. Results therefore transfer across instruments far
+better than they transfer across schemes.
+
+\subsection{Effect of the Payline}
+\label{sec:payline}
+
+Triage value stays flat as the payline loosens while the deletion loss grows, so
+caps cost more the more money a funder has. This inverts the usual intuition that
+rationing matters most when budgets are tightest, and the reason is the fixed
+grant count. At a 5\% payline the funder is taking the very top of the distribution, and
+removing proposals from further down changes little. At 25\% it is reaching well
+into the body of the distribution, where the proposals a cap removed would have
+been funded.
+
+Between a 5\% and a 25\% payline the triage value of a cooling-off rule barely
+moves, from $0.220$ to $0.223$, while its deletion loss grows from $0.244$ to
+$0.272$; the net cost therefore grows from $0.023$ to $0.048$. For a flat
+institutional quota the deletion loss grows from $0.580$ to $0.736$, and for a cap
+of one proposal per researcher from $0.501$ to $0.623$. At very tight paylines the
+milder instruments are close to costless: cooling off gives up $0.023$ in
+portfolio quality, a fortieth of a standard deviation, while lifting the success
+rate from 2.3\% to 4.4\%.
+
+\subsection{Source of the Two-Stage Advantage}
+\label{sec:why}
+
+Two-stage screening funds a better portfolio than reviewing everything ($2.426$
+against $2.058$), and no filter improves a proposal, so the gain has to come from
+somewhere else. With the grant count fixed, the quality of the funded portfolio
+depends on exactly two things: which proposals are in the pool, and how accurately
+the funder ranks the pool it has. Two-stage screening changes both. It enlarges
+the pool, because entry costs an outline rather than a proposal. And it reads
+what it receives twice, on independent noise, so its final ranking rests on more
+information than a single review does. Those are the only two candidates, and they
+can be separated.
+
+Removing the first leaves the second alone. We ran the outline stage with its
+writing cost, its screening cost and its elasticity all set to zero, and entry
+priced at a full proposal, so nothing draws extra entries and the pool is exactly
+the pool an uncapped scheme would face. An outline screen as accurate as the
+funder's own panel then cuts the load by 69\% and reaches $2.014$, against
+$2.029$ for reviewing everything and $1.526$ for a ballot at the same load. (These
+three are computed together over 12 populations rather than the 16 used for
+Table~\ref{tab:cap}, which is why the uncapped figure is $2.029$ here and $2.058$
+there; only their comparison matters.) The second reading is worth a great deal
+against a ballot, which is ordinary triage value, and it makes up almost all of
+what the capacity cut costs, recovering $0.488$ of the $0.503$ that reviewing
+everything is worth over a ballot. It does not close the gap. Making the screen
+noisier only widens it, down to $1.793$ at $\sigma=3.0$, and the best case we ran
+--- a screen exactly as accurate as the funder's own review --- still falls short
+of reviewing everything.
+
+Within this model, then, two-stage's advantage over the uncapped case is pool
+inflation rather than better reading. The sweep corroborates this from the other
+direction: the claim that two-stage exceeds the uncapped reference fails precisely
+in the low-elasticity settings, the ones where the pool does not inflate. The
+scheme is not selecting better than full review; it is running a larger
+competition, and a larger competition has a stronger upper tail however it is
+screened.
+
+The result is narrower than it may look. What has been shown is that a second
+statistically independent reading of the same information adds nothing beyond
+ordinary triage value. Real two-stage schemes may read twice in ways this model
+does not represent: a different reviewer pool at each stage, an outline eliciting
+different information from a full proposal, or better panel discussion under a
+lighter load. Any of those would be a genuine benefit from reading twice, and
+none is ruled out here.
+
+\section{Discussion}
+
+Compared at the same review load, each instrument achieves something different.
+The choice therefore follows from which outcome a funder is trying to protect.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{What each instrument achieves at equal review load, and what it costs.}
+\begin{tabular}{p{3.1cm}p{5.7cm}p{5.9cm}}
+\toprule
+instrument & achieves & at the cost of \\
+\midrule
+two-stage screening
+  & the best funded portfolio, and the most quality per unit of applicant
+    effort, on the lowest total effort of any instrument
+  & the fewest people funded and the most repeat winning; and it may not reduce
+    the load at all if applicants respond strongly to cheap entry \\
+institutional quota (flat)
+  & the widest spread of funding across institutions
+  & the most wasted applicant effort, and an allocation further below what merit
+    alone would produce than any other instrument \\
+cooling-off rule
+  & a capacity cut at low cost on portfolio quality, and second only to
+    two-stage on quality per unit of applicant effort
+  & a sharply smaller applicant population (1880 researchers to 1129), and the
+    highest volume advantage of any instrument in the main comparison \\
+resubmission limit
+  & the closest match between the researchers funded and their quality
+  & giving up more portfolio quality than either quota does, and an inability to
+    deliver a deep cut \\
+individual cap
+  & the least repeat winning, the most distinct winners, and the only real
+    compression of submission volume
+  & the weakest selection of the instruments tested, with the compression
+    arriving only at settings that cost portfolio quality \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+One constraint applies before any of these trade-offs becomes relevant.
+Resubmission limits and two-stage screening cannot reduce the load past a floor
+set by what they act on, so a badly overloaded funder cannot use them however
+severely they are set. For a resubmission limit that floor is roughly half the
+uncapped load. For two-stage screening it depends on how applicants respond to
+cheap entry, and where they respond strongly the scheme can generate more review
+work than it saves.
+
+\section{Limitations}
+
+The clearest limitation is the absence of an empirical test. The model reproduces one
+published measurement of review instability and partially replicates
+\citet{roebber2011}, whose case~(a) reproduces out-of-sample and in doing so
+caught an error in the published paper: the correct-reviewer threshold is 105,
+per their Figure~2, not the 110 implied by their text. Their later cases could
+not be reproduced from the published description, and turn on reviewer
+heterogeneity outside this model's scope. Beyond that there is no validation
+against outcomes from real quota systems, cooling-off schemes or two-stage
+programmes, because we have not found a published series pairing application
+counts with a demand-management policy change. Every result here is therefore a
+property of the model, and transfers to a real scheme only so far as the model
+does.
+
+One parameter is fixed without an anchor and without a sweep. The accuracy of
+outline screening, $\sigma_{\text{eoi}}$, is set to $0.9$ throughout, roughly four
+and a half times noisier than a full review, on the reasoning that an outline
+carries less of the proposal. Nothing pins that ratio, and it is held fixed in
+the 424-setting sweep, so the sweep does not bound how much two-stage screening's
+standing depends on it. The one place it is varied is the mechanism test in
+Section~\ref{sec:why}, where degrading the screen from $\sigma_{\text{eoi}} =
+0.195$ to $3.0$ costs $0.22$ in funded quality --- appreciable, but smaller than
+the effect of volume elasticity. A proper sweep of $\sigma_{\text{eoi}}$ alongside
+the rest is the obvious next thing to run.
+
+Volume elasticity is the one unmeasured parameter we have swept that changes a
+conclusion, and it changes only two-stage screening's. A direct measurement would be application
+counts before and after a change in entry cost.
+
+One family of demand management sits outside the comparison because it does not
+reduce the number of proposals at all. Wellcome's stated approach is to remove
+deadlines and queue applications to the next shortlisting meeting with spare
+capacity, spreading arrivals over time rather than filtering
+them.\footnote{\wa{https://web.archive.org/web/20260805072847/https://wellcome.org/research-funding/guidance/how-wellcome-makes-funding-decisions/how-wellcome-manages-application-demand}{5 August 2026}}
+Whether smoothing beats filtering is a question this model cannot pose, because it
+has no notion of a peak: capacity is a constant per round.
+
+Quality is a single latent score standing in for scientific merit, novelty, risk
+and societal value, so any conclusion about what a funder should maximise is
+conditional on that collapse. The effort accounting is also incomplete and
+asymmetric in a known direction, as Section~\ref{sec:effort} sets out: institutional
+quotas are not charged for running their own competition, so their standing on
+$Q/E$ is conservative.
+
+\section{Future Work}
+\label{sec:future}
+
+Funding does not raise the probability of future funding, so the concentration
+figures measure static inequality rather than a Matthew effect. Adding cumulative
+advantage would bear hardest on the instruments that concentrate funding on
+fewest people, which the grants-per-winner column identifies as two-stage
+screening.
+
+Combinations of instruments are untested, and are the most promising next step.
+Real schemes stack them --- a Wellcome Discovery Award applicant faces a
+per-investigator cap, a resubmission limit and a twelve-month cooling-off period
+at once --- and the trade-offs found here are close to complementary: what two-stage screening does well is roughly what individual caps
+do badly, and the reverse. A pairing that uses one instrument to reach capacity
+and another to repair what it breaks may therefore dominate any single one.
+
+Three further questions sit outside this comparison rather than missing from it:
+whether a scheme can police the co-investigator route around a per-investigator
+cap, whether a funder should buy more review capacity instead of rationing, and
+what administrative machinery each instrument requires.
+
+\section{Conclusions}
+
+Demand management works by removing proposals, not by improving them, and with a
+fixed number of grants a smaller pool means a weaker funded portfolio. Choosing an
+instrument is therefore choosing what to give up. Comparing five instruments at
+equal review load against a random-thinning counterfactual at the same load, every
+one beats that counterfactual, in the main comparison and in 92\% of 424
+parameter settings: selecting which proposals go is worth more than removing an
+equivalent number at random. Beyond that they diverge, and they diverge in
+opposition. Two-stage screening funds the best portfolio, and also funds the
+fewest researchers, concentrates grants most and matches funding to researcher
+quality least well; individual caps spread funding most evenly across people and
+select worst.
+
+Two-stage screening is also the one instrument that can beat unrestricted review
+rather than merely lose least against it. It does so by enlarging the pool it
+selects from and not by reading proposals any better, so the exception rests
+entirely on applicants responding to a cheaper route in --- the one parameter we
+cannot measure, and the one that decides whether the scheme can reduce the load at
+all.
+
+One finding turns on the structure of the instruments rather than on the
+parameters chosen, and bears on the choice before any trade-off between effects
+does. Resubmission limits and two-stage screening cannot reduce the review load
+past a floor set by what they act on, so a badly overloaded funder cannot use
+them however severely they are set. The floors are high: banning resubmission
+outright still leaves about half the load. For two-stage screening the floor is
+not a fixed overhead but one the instrument inflates itself, since the cheap entry
+that makes it select well also multiplies the outlines it must screen, and in a
+ninth of the settings swept its most severe setting produces more review work
+than reading every proposal.
+
+The practical implication is not that some instrument is best. It is that the
+answer is fixed by how a funder ranks portfolio quality, breadth of participation
+and applicant effort against each other --- a ranking the choice of instrument
+commits a funder to whether or not it is made explicit.
+
+\begin{thebibliography}{9}
+\bibitem[Barnett et al.(2015)]{barnett2015}
+Barnett, A.G., Graves, N., Clarke, P., Herbert, D. (2015).
+The impact of a streamlined funding application process on application time.
+\textit{BMJ Open} 5(1): e006912.
+
+\bibitem[Fang et al.(2016)]{fang2016}
+Fang, F.C., Bowen, A., Casadevall, A. (2016).
+NIH peer review percentile scores are poorly predictive of grant productivity.
+\textit{eLife} 5: e13323.
+
+\bibitem[Graves et al.(2011)]{graves2011}
+Graves, N., Barnett, A.G., Clarke, P. (2011).
+Funding grant proposals for scientific research: retrospective analysis of scores
+by members of grant review panel. \textit{BMJ} 343: d4797.
+
+\bibitem[Herbert et al.(2013)]{herbert2013}
+Herbert, D.L., Barnett, A.G., Clarke, P., Graves, N. (2013).
+On the time spent preparing grant proposals. \textit{BMJ Open} 3(5): e002800.
+
+\bibitem[Roebber \& Schultz(2011)]{roebber2011}
+Roebber, P.J., Schultz, D.M. (2011).
+Peer review, program officers and science funding.
+\textit{PLoS ONE} 6(4): e18680.
+\end{thebibliography}
+
+\end{document}

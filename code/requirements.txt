@@ -1,0 +1,6 @@
+# Runtime
+numpy>=2.0
+pandas>=2.0      # exp07 only: sweep design and result aggregation
+
+# Testing
+pytest>=8.0
