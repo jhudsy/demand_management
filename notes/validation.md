@@ -55,6 +55,16 @@ reproduce. The **qualitative** signatures matter more than the third decimal:
 If our implementation does not reproduce those two sign patterns, something is
 wrong with the model, not with the paper.
 
+> **Note added 2026-08-24.** The paragraph above was written *before* the
+> replication was attempted, and is left unedited as the pre-registered
+> criterion. The outcome was mixed: signature (f) reproduces, signature (g) does
+> not. The two `[FAIL]` lines in `results/validation.txt` are those (g) checks,
+> and they are expected rather than a regression. The criterion's conclusion —
+> that a failure implicates our model rather than the source — was not sustained;
+> see *Assessment* at the end of this file for why the published description is
+> judged insufficient to reproduce, and note the standing constraint that nothing
+> in our model may be tuned to match it.
+
 ### Parameters the paper does not state — must be inferred and documented
 
 These are genuine gaps. Each needs a documented choice plus a sensitivity check
@@ -275,3 +285,24 @@ reporting in the paper as a replication finding in its own right: the only prior
 ABM of proposal-limiting policy cannot be fully reproduced from its own methods
 section. **Nothing in our own model should be tuned to match it, and H6 must not
 lean on case (g) until this resolves.**
+
+---
+
+## Status of the automated checks — 2026-08-24
+
+`python -m validation.report` ends with four qualitative assertions, committed as
+`results/validation.txt`. Two pass and two fail, and the split is the finding:
+
+| check | status | reading |
+|---|---|---|
+| (f) cap lowers untargeted group's funded quality | PASS | 113.1 -> 111.7 |
+| (f) cap cuts targeted group's funding share | PASS | 73.4% -> 50.4% |
+| (g) cooling-off raises high-volume group's share | FAIL | 71.9%, direction not reproduced |
+| (g) cooling-off roughly halves G1 success | FAIL | 11.8% vs 13.0%, magnitude not reproduced |
+
+The (f) pair is the demand-management signature this project actually depends on,
+and it holds. The (g) pair rests on the baseline reversal analysed above, which
+is not recoverable from the published methods section. These two failures are
+therefore left standing deliberately: they are the replication finding, not a bug
+to be fixed, and suppressing them would misrepresent the result. They must not be
+made to pass by tuning.

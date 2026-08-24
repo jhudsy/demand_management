@@ -96,7 +96,9 @@ Reimplementation of Roebber & Schultz (2011), the only prior agent-based
 treatment of proposal-limiting policy. `roebber_schultz.py` is the model,
 `report.py` prints the comparison against their published figures. Their
 case (a) reproduces out of sample; the later cases could not be reproduced from
-the published description. See `notes/validation.md`.
+the published description. The two `[FAIL]` lines at the end of
+`results/validation.txt` are that non-reproduction, and are expected: they are
+left failing on purpose rather than tuned away. See `notes/validation.md`.
 
 ### `code/tests/`
 
