@@ -22,7 +22,7 @@ wrote results/exp07_cells.csv  (3392 rows)
   420/424 cells  7948s (eta 76s)
   424/424 cells  7955s (eta 0s)
 
-wrote /Users/csc342/scratch/funding_policy_in_ai_age/AutoSci/demand_management/code/results/exp07_cells.csv  (3392 rows, 7956s)
+wrote results/exp07_cells.csv  (3392 rows, 7956s)
 
 ==============================================================================
 1. FEASIBILITY FRONTIER -- the tightest cut each instrument can deliver
